@@ -10,14 +10,38 @@ import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
+export async function getStaticPaths() {
+  return {
+    paths: [
+    { params: { animal: 'dog' } },
+    { params: { animal: 'cat' } }],
+    fallback: false, // can also be true or 'blocking'
+  }
+}
 
-const CachingTest = () => {
+// `getStaticPaths` requires using `getStaticProps`
+export async function getStaticProps(context) {
+  console.log('fetching static props ' + context.params.animal)
+  const animalQuery = context.params.animal;
+  const animalTime = await axios.get(`http://localhost:4005/animal/${animalQuery}`)
+  .then(res => {
+    console.log('fetched statically!!')
+    return res.data
+  }).catch((e) => {console.error(e)})
+
+  return {
+    // Passed to the page component as props
+    props: { animalTime },
+  }
+}
+
+const CachingTest = ({animalTime: animalTimeProps}) => {
   const router = useRouter()
-  const { animal } = router.query
-  const [animalTime, setAnimalTime] = useState(null)
+  const { animal: animalQuery } = router.query
+  const [animalTime, setAnimalTime] = useState(animalTimeProps)
 
+  console.log({animalTimeProps})
   const fetchAnimal = async(animal) => {
-    setAnimalTime(null)
     if (!animal) {
       return;
     }
@@ -28,9 +52,12 @@ const CachingTest = () => {
   };
 
   useEffect(() => {
-    console.log('fetching: ' + animal)
-    fetchAnimal(animal)
-  }, [animal]);
+    console.log('fetching: ' + animalQuery)
+    fetchAnimal(animalQuery)
+  }, [animalQuery]);
+
+  // const aggAnimalTime = animalTime ? animalTime : animalTimeProps
+
   const animalTimeJsx = animalTime ? (
     <div>
       <div>
@@ -50,12 +77,15 @@ const CachingTest = () => {
       <Card sx={{ minWidth: 275, width: 300, margin: 'auto'}}>
         <CardContent>
           <Typography sx={{ fontSize: 36 }} color="text.primary" gutterBottom>
-            {animal}
+            {animalQuery}
           </Typography>
           {animalTimeJsx}
         </CardContent>
         <CardActions>
-          <Button size="small" onClick={() => fetchAnimal(animal)}>Refresh</Button>
+          <Button size="small" onClick={() => {
+            setAnimalTime(null)
+            fetchAnimal(animalQuery)
+          }}>Refresh</Button>
         </CardActions>
       </Card>
     </>
