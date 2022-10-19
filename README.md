@@ -2,6 +2,12 @@ This is a project to test caching behavior on next.js.
 
 ## Getting Started
 
+Install npm packages
+
+```
+yarn
+```
+
 Run the API server
 
 ```bash
