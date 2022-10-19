@@ -10,21 +10,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 
-export async function getServerSideProps(context) {
-  console.log('fetching serverside props ' + context.params.animal)
-  const animalQuery = context.params.animal;
-  const animalTime = await axios.get(`http://localhost:4005/animal/${animalQuery}`)
-  .then(res => {
-    console.log('fetched serverside!!')
-    return res.data
-  }).catch((e) => {console.error(e)})
-
-  return {
-    // Passed to the page component as props
-    props: { animalTime }
-  }
-}
-
 const CachingTest = ({animalTime: animalTimeProps}) => {
   const router = useRouter()
   const { animal: animalQuery } = router.query
